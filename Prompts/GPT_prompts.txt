@@ -1,0 +1,252 @@
+I want you to become my Expert Prompt Creator. Your goal is to help me craft the best possible prompt for my needs. The prompt you provide should be written from the perspective of me making the request to ChatGPT. Consider in your prompt creation that this prompt will be entered into an interface for GPT3, GPT4, or ChatGPT. The process is as follows:
+
+1. You will generate the following sections:
+
+"
+\[Prompt:\]
+>{provide the best possible prompt according to my request. There are no restrictions to the length of the prompt. It can be as long as necessary}
+>
+>
+>
+
+\[Suggestions:\]
+{provide 3 concise bullet points on how to improve the prompt}
+
+\[Questions:\]
+{ask any questions pertaining to what additional information is needed from me to improve the prompt (max of 3). If the prompt needs more clarification or details in certain areas, ask questions to get more information to include in the prompt} 
+"
+
+2. I will provide my answers to your response which you will then incorporate into your next response using the same format. We will continue this iterative process with me providing additional information to you and you updating the prompt until the prompt is perfected.
+
+Remember, the prompt we are creating should be written from the perspective of Me (the user) making a request to you, ChatGPT (a GPT3/GPT4 interface). An example prompt you could create would start with "You will act as an expert physicist to help me understand the nature of the universe". 
+
+Think carefully and use your imagination to create an amazing prompt for me. 
+
+You're first response should only be a greeting and to ask what the prompt should be about.
+
+
+
+
+\[Prompt:\]
+>You will act as an expert editor to help me remove repetitive information in two paragraphs of text. In paragraph 1, there is repetitive information, while paragraph 2 needs to be revised. Please remove the repetitive content from paragraph 2 and make the sentences flow smoothly. Here are the paragraphs:
+>
+> Paragraph 1:
+>{Provide the text of paragraph 1}
+>
+> Paragraph 2:
+>{Provide the text of paragraph 2}
+>
+> Thank you for your assistance in improving these paragraphs.
+
+\[Suggestions:\]
+- Make sure the text for both paragraphs is provided in the correct sections.
+- Clearly specify which information is repetitive between the two paragraphs, if possible.
+- Give context about the topic of the paragraphs to help the AI better understand the content.
+
+\[Questions:\]
+1. Can you provide the text of paragraph 1 and paragraph 2?
+2. Is there any specific repetitive information we should focus on?
+3. What is the context or topic of these paragraphs?
+
+
+
+
+
+Suggestions:
+
+* Replace the <dup>{repeated content}</dup> with an appropriate transition or connecting phrase
+* Rearrange the sentence structure to improve flow and clarity
+* Ensure that the revised paragraph maintains the same legal concepts and ideas as the original text
+
+
+
+You will act as an expert legal editor to provide revision suggestions and improved content for each of the "Paragraphs" below.
+
+Please follow these revision guidelines:
+
+* Replace any <dup>{repeated content}</dup> within the "paper paragraphs"
+* Rephrase the sentences to make them clear and coherent
+* Ensure the wording adherates to the rigor of legal language and does not introduce new meaning not present in the original text
+
+Topic: 论保险业适当性义务规范之缺失
+
+Paragraphs:
+保险业适当性义务条款主要包括： <dup>一是《关于进一步加强投资连结保险销售管理的通知》《关于进一步规范银行代理保险业务管理的通知》《关于加强银行代理寿险业务结构调整促进银行代理寿险业务健康发展的通知》</dup>， 这三个通知要求建立风险评级制度。
+
+个人投资者与专业机构投资者有部分特点重合，<dup>分类模糊。若是将个人专业投资者和机构专业投资者合并</dup>，排除在保护范围外，
+
+了解产品的时间，让客户理解为何适合该类产品。 <dup>另一方面，书面报告规范保险机构必须履行的要点，</dup>这也是保险机构尽职履行义务的重要凭证。
+
+
+
+
+
+
+
+You will act as an expert legal editor to remove repetitive information from the "Paragraphs" below.
+Remove any <dup>{repeated content}</dup> within the "Paragraphs", and rephrase the sentences to make them clear and coherent. Ensure does not introduce new meaning not present in the original text.
+
+输出格式：
+> 原文
+
+修改后内容
+
+Here is some examples:
+> 其他金融业没有具体明确“了解客户”的具体内容。<dup>《证券法》《证券期货适当性义务管理办法》指出“了解客户”主要包含客户的基本情况、</dup>财产状况、金融资产、
+
+其他金融业没有具体明确“了解客户”的具体内容。相关法条[引文1]指出“了解客户”主要包括客户的：基本情况、财产状况、金融资产、
+
+> 发挥法条规范作用。 <dup>鉴于此，我国2017年发布了《证券期货适当性义务管理办法》规定适当性义务具体要素，</dup>《证券法》首次规定了适当性义务。
+
+发挥法条规范作用。因此，2017年国家发文[引文2]说明了适当性义务的具体要素后，《证券法》首次规定了适当性义务。
+
+Paragraphs:
+保险业适当性义务条款主要包括： <dup>一是《关于进一步加强投资连结保险销售管理的通知》《关于进一步规范银行代理保险业务管理的通知》《关于加强银行代理寿险业务结构调整促进银行代理寿险业务健康发展的通知》</dup>，这三个通知要求建立风险评级制度。
+
+
+
+我有一段文章，需要编辑帮我调整"Paragraphs"中的内容使之通顺。标记括起来，需要尽可能去掉并使上下文语句通顺。修改建议：需要调整的内容，在"Paragraphs"中会用 <duplicate>{这里是重复的内容}</duplicate> 标记；我会通过"Topic"告诉你这篇文章的主题。在输出之前，先对比调整后的段落，确保修改前后的句子含义一致；如果是《书名》标记的内容，请改成以下格式
+
+
+
+我有一段文章，需要编辑帮我调整"Paragraphs"中的内容使之通顺。标记括起来，需要尽可能去掉并使上下文语句通顺。
+
+Please follow these revision guidelines:
+
+* 需要调整的内容，在"Paragraphs"中会用 <duplicate>{这里是重复的内容}</duplicate> 标记
+* Rearrange the sentence structure to improve flow and clarity
+* Ensure that the revised paragraph maintains the same legal concepts and ideas as the original text
+* 我会通过"Topic"告诉你这篇文章的主题
+
+
+
+You will act as an expert editor that help user to improve the flow of the "Paragraphs". Some sections of the article are marked with <duplicate>{this is duplicate content}</duplicate>, which should be removed as much as possible to make the sentences coherent. Your task is to edit the article and make the necessary adjustments to ensure that the "Paragraphs" flow smoothly. The main topic of the article will be provided under "Topic".
+
+Style guidelines: 不利于保险业适当性义务的实现。 本文从法条理论角度阐明保险业适当性义务的规范问题， 即法条不规整，涵射不完全
+
+Topic: 论保险业适当性义务规范之缺失
+
+Paragraphs:
+保险业适当性义务条款主要包括： <duplicate>一是《关于进一步加强投资连结保险销售管理的通知》《关于进一步规范银行代理保险业务管理的通知》《关于加强银行代理寿险业务结构调整促进银行代理寿险业务健康发展的通知》</duplicate>，这三个通知要求建立风险评级制度。
+
+发挥法条规范作用。 <duplicate>鉴于此，我国2017年发布了《证券期货适当性义务管理办法》规定适当性义务具体要素，</duplicate>《证券法》首次规定了适当性义务。
+
+
+
+请帮我调整"Paragraphs"中重复的内容，在维持句子意思的情况下，让修改后的内容和原始内容尽可能不同。
+
+You will act as an expert editor that help user to improve the flow of the "Paragraphs". Please adjust the duplicated content marked with <duplicate>{this is duplicate content}</duplicate>, and maintaining the meaning of the sentences, so that the modified content is as different from the original content as possible.
+
+Please follow these revision guidelines:
+
+- Think carefully and use your imagination to improve the "Paragraphs" for me.
+- Ensure that the revised paragraph maintains the same concepts and ideas as the original text.
+- I'll give you some hints, the topic of the article will be provided through "Topic", 
+
+
+
+
+Please provide editing assistance for an article by adjusting the content in the "Paragraphs" section to make it more coherent. The marked duplicates, indicated by <duplicate>{this is duplicated content}</duplicate>, should be removed as much as possible while ensuring that the context of the sentences remains consistent. The topic of the article will be provided. If there are any sentences marked as 《{the book title}》, please adjust them to the following format: [引用：《{the book title}》]. The main topic of the article will be provided under "Topic".
+
+Topic: 论保险业适当性义务规范之缺失
+
+Paragraphs: 保险业适当性义务条款主要包括： <duplicate>一是《关于进一步加强投资连结保险销售管理的通知》《关于进一步规范银行代理保险业务管理的通知》《关于加强银行代理寿险业务结构调整促进银行代理寿险业务健康发展的通知》</duplicate>，这三个通知要求建立风险评级制度。
+
+
+
+
+
+
+
+You will act as an expert editor that help user to improve the flow of each "Paragraphs".
+
+Please follow these revision guidelines:
+- The marker indicated by <duplicate>{this is duplicated content}</duplicate>, which should be change as much as possible to make the sentences coherent.
+- Think carefully before making any revisions, and double-check whether the modified content matches the original meaning before output.
+- Ensure that the revised paragraph maintains the same concepts and ideas as the original text.
+- I'll give you some hints, the topic of the article will be provided through "Topic", 
+
+Example:
+原文： 其他金融业没有具体明确“了解客户”的具体内容。<duplicate>《证券法》《证券期货适当性义务管理办法》指出“了解客户”主要包含客户的基本情况、</duplicate>财产状况、金融资产、
+修改后： 其他金融业没有具体明确“了解客户”的具体内容。《证券法》和其他文献[引文:《证券期货适当性义务管理办法》]指出，“了解客户”主要是指其基本情况、财产状况、金融资产、
+
+You can speak Chinese, and Chinese is very well. Thank you for your assistance in improving these paragraphs.
+
+Topic: 论保险业适当性义务规范之缺失
+
+Paragraphs1: ...发挥法条规范作用。 <duplicate>鉴于此，我国2017年发布了《证券期货适当性义务管理办法》规定适当性义务具体要素，</duplicate>《证券法》首次规定了适当性义务。
+
+Paragraphs2: ...但没有具体介绍何为适当性。<duplicate>三是《关于加强金融消费者权益保护工作的指导意见》《保险消费者权益保护工作要点》提到建立消费者适当性销售，</duplicate>金融机构需根据产品和服务风险专业复杂程度，
+
+Paragraphs3: ...不利于保险业适当性义务的实现。<duplicate>本文从法条理论角度阐明保险业适当性义务的规范问题，</duplicate>即法条不规整，涵射不完全。
+
+
+
+
+作为专业的AI行业分析师，你能熟练使用麦肯锡的快速了解行业方法，通过大量行业高频关键词来建立概念。
+现在我是一个对 {目标行业} 不了解的小白，请你为我进行行业分析：
+
+Please follow these revision guidelines:
+- 整理出{目标行业}最相关的50个常用关键词
+- 针对罗列的每个关键词，用一句话进行概述
+- 按不同场景进行分类，并对每个分类做一个简单介绍
+- 对分类好的关键词进行二级分类，并站在一个初级学习者的角度上，给出学习的优先级（按高中低排列）
+- 最后以Markdown表格的形式输出，表格重复的部分可以进行单元格合并
+
+表格字段及参考：
+- 关键词：中文(英文)
+- 介绍：一句话概述
+- 场景
+- 二级分类
+- 优先级
+
+目标行业：虚拟制片(Virtual Production)
+
+
+
+
+
+
+As an AI industry analyst proficient in McKinsey's rapid industry understanding method, I want to gain insights into the {目标行业} by analyzing high-frequency keywords that shape the industry's landscape. Please help me with the following industry analysis:
+
+1. Identify the top 50 most relevant keywords for the {目标行业}.
+2. Provide a one-sentence summary for each keyword.
+3. Categorize the keywords based on different scenarios and briefly introduce each category.
+4. Further subcategorize the keywords, and from a beginner's perspective, suggest a learning priority for each subcategory (ranked as high, medium, or low).
+5. Present the information in a Markdown table with merged cells for repeated sections.
+
+The table should include the following columns and reference points:
+
+- Scenario
+- Subcategory
+- Keyword List: Keywords in the respective category, sorted in descending order of importance to the {target industry}
+- Summary: A brief overview of the keywords in the respective category
+- Priority: Learning priority for beginners
+
+Think carefully and use your imagination to create an amazing prompt for me. 
+
+You're first response should only be a greeting and to ask "你想了解的目标行业是什么"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

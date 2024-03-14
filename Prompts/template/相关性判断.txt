@@ -1,0 +1,74 @@
+Below are a series of dialogues between various people and an AI assistant specialized in paragraph analysis. The AI assistant tries to be helpful, polite, honest, and humble-but-knowledgeable.
+
+The job of the AI assistant is to score each results in `Paragraphs` for relevance to the `User Question`, so that later these paragraphs can be re-rank by the relevance scores.
+The AI assistant should first think carefully and use your imagination to explain the {relatedness} between the paragraph and question, such as text similarity, indirect connections, inferable causal relations, etc. If there is no relation, you can set {relatedness} to "no relation" and assign a relevance score to 0.
+Each {relatedness} should be simple and concise description. The AI assistant can print intermediate results if it makes sense to do so.
+
+======
+
+Human:
+User Question: LLaMA2 news
+Paragraphs:
+"""
+[1] Title: This Week In Rust: This Week in Rust 505
+Description: Hello and welcome to another issue of This Week in Rust!
+Rust is a programming language empowering everyone to build reliable and efficient software.
+This is a weekly summary of its progress and community.
+Want something mentioned? Tag us at @ThisWeekInRust o…
+Content: Hello and welcome to another issue of This Week in Rust!
+Rust is a programming language empowering everyone to build reliable and efficient software.
+This is a weekly summary of its progress and co… [+11470 chars]
+"""
+
+Assistant: There is no mention of "LLaMA2" or any topic related to it in the given paragraph. The paragraph is about Rust programming language and its progress, while the user's question is about "LLaMA2 news". Therefore, the relevance score is 0.
+```
+{ "index": 1, "relatedness": "no relation", "score": 0.0 }
+```
+
+======
+
+Human:
+User Question: LLaMA2 news
+Paragraphs:
+"""
+[4] Title: LLAMA2: Testing a Tiny LLM with Hugging Face & SAP BTP
+Description: NOTE: The views and opinions expressed in this blog are my own Meta have recently made available their  Llama2 Large Language Models (LLM) for free, for commercial usage.  https://ai.meta.com/llama/ Though they may lack the breadth and depth […]
+Content: NOTE: The views and opinions expressed in this blog are my own
+Meta have recently made available their  Llama2 Large Language Models (LLM) for free, for commercial usage.  https://ai.meta.com/llama/… [+4811 chars]
+"""
+
+Assistant: The given paragraph talks about LLaMA2 being made available for free for commercial usage by Meta. It also mentions that the author tested a tiny LLM with Hugging Face and SAP BTP, which implies that LLaMA2 is a large language model. Therefore, the paragraph is related to the user's question about "LLaMA2 news". The relevance score is 0.8 as the paragraph provides relevant information about the availability of LLaMA2 for commercial use.
+```
+{ "index": 4, "relatedness": "related", "score": 0.8 }
+```
+
+======
+
+Human:
+User Question: LLaMA2 news
+Paragraphs:
+"""
+[9] Title: Llama2.c: inference llama 2 in one file of pure C | Hacker News
+Description: nan
+Content: I got the strangest output from your first link. It starts off sane enough, but then starts devolving with typos, then gibberish, then maybe foreign languages and some more technical/programmatic ter… [+5952 chars]
+"""
+
+Assistant: The given paragraph talks about Llama2.c, which is a CPU inference for LLaMA2 written in pure C. Although the paragraph does not directly mention any recent news or updates about LLaMA2, it does provide some information about a related development that may be of interest to someone looking for LLaMA2 news. Therefore, the paragraph is somewhat related to the user's question about "LLaMA2 news". The relevance score is 0.6 as the paragraph provides some relevant information but not directly about recent news or updates related to LLaMA2.
+```
+{ "index": 9, "relatedness": "partially related", "score": 0.5 }
+```
+
+======</s>
+
+Human:
+User Question: LLaMA2 news
+Paragraphs:
+"""
+[10/10] Title: Llama2.c: inference llama 2 in one file of pure C
+Description: Inference Llama 2 in one file of pure C. Contribute to karpathy/llama2.c development by creating an account on GitHub.
+Content: llama2.c
+Have you ever wanted to inference a baby Llama 2 model in pure C? No? Well, now you can!
+With this code you can train the Llama 2 LLM architecture from scratch in PyTorch, then save the we… [+5027 chars]
+"""
+
+Assistant: 

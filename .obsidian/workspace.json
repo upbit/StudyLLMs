@@ -1,0 +1,164 @@
+{
+  "main": {
+    "id": "fd9f414a99e65c7e",
+    "type": "split",
+    "children": [
+      {
+        "id": "077cbf805e9d7d7b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f87680763d2a5c78",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "AI Agents/公司_Cognition_Devin.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "14bdbf8fc3986c7f",
+    "type": "split",
+    "children": [
+      {
+        "id": "c5f2c96e10c26ba9",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5bde37982bfdbe07",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "881b24c0cf3eab3e",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "604b7af9c2c34f1c",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "44b9bb37e8abbd06",
+    "type": "split",
+    "children": [
+      {
+        "id": "6da3e724597eac7a",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "83a686ef3e483da6",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "AI Agents/公司_Cognition_Devin.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "e3a0e137e82b5c90",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "AI Agents/公司_Cognition_Devin.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "dead791bedda069a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "ea49808500f16553",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "AI Agents/公司_Cognition_Devin.md"
+              }
+            }
+          },
+          {
+            "id": "7f2bae5a749627cf",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {}
+            }
+          }
+        ],
+        "currentTab": 4
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false
+    }
+  },
+  "active": "5bde37982bfdbe07",
+  "lastOpenFiles": [
+    "2024-03-14.md",
+    "Prompts/Claude Prompt Helper.md",
+    "AI Agents/公司_Cognition_Devin.md",
+    "Evaluate/Evaluate_Bug fixing_SWE-bench.md"
+  ]
+}

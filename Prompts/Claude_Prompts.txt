@@ -1,0 +1,543 @@
+根据下面文章内容，分析 Power your products with ChatGPT and your own data 如何将自己的数据提供给ChatGPT，并让GPT进行回答的。
+作答前请参考下面流程：
+- 先尝试阅读全文，理解并总结出文章中的独特观点，以markdown表格的形式进行总结输出
+- 对输出的这些表格，检查是否有遗漏或非文章中提到的观点，如有则将其修正
+- 根据这些观点，分析如下问题的答案
+
+问题：
+1. 通过向量数据库，如何找到数据中含问题答案的的文本段落，并以何种方式提供给ChatGPT？请举例说明
+2. 如何确保ChatGPT输出的内容，都是数据中包含的而非杜撰的不存在信息？
+
+正文：
+
+```
+Title: Power your products with ChatGPT and your own data
+
+Content: This is a walkthrough taking readers through how to build starter Q&A and Chatbot applications using the ChatGPT API and their own data.
+
+It is laid out in these sections:
+
+Setup:
+Initiate variables and source the data
+Lay the foundations:
+Set up the vector database to accept vectors and data
+Load the dataset, chunk the data up for embedding and store in the vector database
+Make it a product:
+Add a retrieval step where users provide queries and we return the most relevant entries
+Summarise search results with GPT-3
+Test out this basic Q&A app in Streamlit
+Build your moat:
+Create an Assistant class to manage context and interact with our bot
+Use the Chatbot to answer questions using semantic search context
+Test out this basic Chatbot app in Streamlit
+Upon completion, you have the building blocks to create your own production chatbot or Q&A application using OpenAI APIs and a vector database.
+
+This notebook was originally presented with these slides, which provide visual context for this journey.
+
+%load_ext autoreload
+%autoreload 2
+Setup
+First we'll setup our libraries and environment variables
+
+import openai
+import os
+import requests
+import numpy as np
+import pandas as pd
+from typing import Iterator
+import tiktoken
+import textract
+from numpy import array, average
+
+from database import get_redis_connection
+
+# Set our default models and chunking size
+from config import COMPLETIONS_MODEL, EMBEDDINGS_MODEL, CHAT_MODEL, TEXT_EMBEDDING_CHUNK_SIZE, VECTOR_FIELD_NAME
+
+# Ignore unclosed SSL socket warnings - optional in case you get these errors
+import warnings
+
+warnings.filterwarnings(action="ignore", message="unclosed", category=ImportWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning) 
+pd.set_option('display.max_colwidth', 0)
+data_dir = os.path.join(os.curdir,'data')
+pdf_files = sorted([x for x in os.listdir(data_dir) if 'DS_Store' not in x])
+pdf_files
+["FIA Practice Directions - Competitor's Staff Registration System.pdf",
+ 'fia_2022_formula_1_sporting_regulations_-_issue_9_-_2022-10-19_0.pdf',
+ 'fia_2023_formula_1_technical_regulations_-_issue_4_-_2022-12-07.pdf',
+ 'fia_f1_power_unit_financial_regulations_issue_1_-_2022-08-16.pdf',
+ 'fia_formula_1_financial_regulations_iss.13.pdf']
+Laying the foundations
+Storage
+We're going to use Redis as our database for both document contents and the vector embeddings. You will need the full Redis Stack to enable use of Redisearch, which is the module that allows semantic search - more detail is in the docs for Redis Stack.
+
+To set this up locally, you will need to install Docker and then run the following command: docker run -d --name redis-stack -p 6379:6379 -p 8001:8001 redis/redis-stack:latest.
+
+The code used here draws heavily on this repo.
+
+After setting up the Docker instance of Redis Stack, you can follow the below instructions to initiate a Redis connection and create a Hierarchical Navigable Small World (HNSW) index for semantic search.
+
+# Setup Redis
+from redis import Redis
+from redis.commands.search.query import Query
+from redis.commands.search.field import (
+    TextField,
+    VectorField,
+    NumericField
+)
+from redis.commands.search.indexDefinition import (
+    IndexDefinition,
+    IndexType
+)
+
+redis_client = get_redis_connection()
+# Constants
+VECTOR_DIM = 1536 #len(data['title_vector'][0]) # length of the vectors
+#VECTOR_NUMBER = len(data)                 # initial number of vectors
+PREFIX = "sportsdoc"                            # prefix for the document keys
+DISTANCE_METRIC = "COSINE"                # distance metric for the vectors (ex. COSINE, IP, L2)
+# Create search index
+
+# Index
+INDEX_NAME = "f1-index"           # name of the search index
+VECTOR_FIELD_NAME = 'content_vector'
+
+# Define RediSearch fields for each of the columns in the dataset
+# This is where you should add any additional metadata you want to capture
+filename = TextField("filename")
+text_chunk = TextField("text_chunk")
+file_chunk_index = NumericField("file_chunk_index")
+
+# define RediSearch vector fields to use HNSW index
+
+text_embedding = VectorField(VECTOR_FIELD_NAME,
+    "HNSW", {
+        "TYPE": "FLOAT32",
+        "DIM": VECTOR_DIM,
+        "DISTANCE_METRIC": DISTANCE_METRIC
+    }
+)
+# Add all our field objects to a list to be created as an index
+fields = [filename,text_chunk,file_chunk_index,text_embedding]
+redis_client.ping()
+True
+# Optional step to drop the index if it already exists
+#redis_client.ft(INDEX_NAME).dropindex()
+
+# Check if index exists
+try:
+    redis_client.ft(INDEX_NAME).info()
+    print("Index already exists")
+except Exception as e:
+    print(e)
+    # Create RediSearch Index
+    print('Not there yet. Creating')
+    redis_client.ft(INDEX_NAME).create_index(
+        fields = fields,
+        definition = IndexDefinition(prefix=[PREFIX], index_type=IndexType.HASH)
+    )
+Not there yet. Creating
+Ingestion
+We'll load up our PDFs and do the following
+
+Initiate our tokenizer
+Run a processing pipeline to:
+Mine the text from each PDF
+Split them into chunks and embed them
+Store them in Redis
+# The transformers.py file contains all of the transforming functions, including ones to chunk, embed and load data
+# For more details, check the file and work through each function individually
+from transformers import handle_file_string
+%%time
+# This step takes about 5 minutes
+
+# Initialise tokenizer
+tokenizer = tiktoken.get_encoding("cl100k_base")
+
+# Process each PDF file and prepare for embedding
+for pdf_file in pdf_files:
+    
+    pdf_path = os.path.join(data_dir,pdf_file)
+    print(pdf_path)
+    
+    # Extract the raw text from each PDF using textract
+    text = textract.process(pdf_path, method='pdfminer')
+    
+    # Chunk each document, embed the contents and load to Redis
+    handle_file_string((pdf_file,text.decode("utf-8")),tokenizer,redis_client,VECTOR_FIELD_NAME,INDEX_NAME)
+./data/FIA Practice Directions - Competitor's Staff Registration System.pdf
+./data/fia_2022_formula_1_sporting_regulations_-_issue_9_-_2022-10-19_0.pdf
+./data/fia_2023_formula_1_technical_regulations_-_issue_4_-_2022-12-07.pdf
+./data/fia_f1_power_unit_financial_regulations_issue_1_-_2022-08-16.pdf
+./data/fia_formula_1_financial_regulations_iss.13.pdf
+CPU times: user 3.16 s, sys: 372 ms, total: 3.54 s
+Wall time: 45.8 s
+# Check that our docs have been inserted
+redis_client.ft(INDEX_NAME).info()['num_docs']
+'829'
+Make it a product
+Now we can test that our search works as intended by:
+
+Querying our data in Redis using semantic search and verifying results
+Adding a step to pass the results to GPT-3 for summarisation
+from database import get_redis_results
+%%time
+
+f1_query='what are the criteria for disqualification'
+
+result_df = get_redis_results(redis_client,f1_query,index_name=INDEX_NAME)
+result_df.head(2)
+CPU times: user 5.85 ms, sys: 2.61 ms, total: 8.45 ms
+Wall time: 240 ms
+id	result	certainty
+0	0	The IT will, therefore, be competent to establish the existence, or not, of a breach of the FIA regulations and to impose any sanction upon the person and Competitor concerned (see the process governed by the FIA Judicial and Disciplinary Rules). The President of the FIA, in its capacity as prosecuting authority, will ask, in respect of every disciplinary procedure: - - for the imposition of a suspension upon Competitor’s Staff Certificate of Registration holders who have contravened the FIA Code of Good Standing or the withdrawal of the Competitor’s Staff Certificate of Registration (any withdrawal can only be imposed for the remaining period of the current season of the FIA Formula One World Championship) and that these same people not be fined. The person and/or Competitor sanctioned may bring an appeal before the ICA against the IT’s decision. ********* The FIA will inform the relevant Competitor of any proceedings instigated against any member of its staff. It is the responsibility to the relevant Competitor to send the IT a written request to be heard, and if granted, it shall be permitted to submit written observations. The FIA undertakes to support before the IT and/or the ICA any request from the Competitor to intervene as a third party within the framework of a disciplinary procedure. The right to deprive any duly registered member of a Competitor’s staff of access to the Reserved Areas at events forming part of the FIA Formula One World Championship is subject to the procedure set forth in the FIA Judicial and Disciplinary Rules. The Stewards during the course of an Event or otherwise will have no authority to suspend or withdraw a Competitor’s Staff Certificate of Registration for any breach or alleged breach of the FIA Code of Good Standing.	0.205749571323
+1	1	The following sets out examples of the type of behaviours which might constitute an infringement of the FIA Code of Good Standing (non-exhaustive list of examples) in relation to a person who is subject to the Code of Good Standing: - - - - giving instructions to a driver or other member of a Competitor’s staff with the intention or with the likely result of causing an accident, collision or crash or a race to be stopped or suspended any action which is likely to endanger or materially compromise the safety of any driver, other members of the Competitor’s staff, other participants in a race, Officials or any spectators or other members of the public who attend an event giving instructions to make any changes to a car in breach of any safety requirements or regulations giving instructions to tamper with or adversely affect the set-up or performance of the car of any other Competitor 4 / 5 FIA Legal Department Practice Directions - Competitor’s Staff Registration System 17 March 2011 - - giving instructions to a driver or otherwise taking any action by which the result or course of a race may be influenced or affected for the purpose of profiting or assisting someone to profit through betting on the outcome of a race or any part of a race or being convicted of a criminal offence (other than a driving offence) which carries a maximum prison sentence of five years. VII. AMENDMENTS TO THE COMPETITOR’S STAFF REGISTRATION SYSTEM The FIA will not make any amendments with regard to the Competitor’s Staff Registration System, either to the International Sporting Code or to the Practice Directions, prior consultation with the Competitors entered in the FIA Formula One World Championship and adequate opportunity to provide input on the proposed amendments.	0.206525266171
+# Build a prompt to provide the original query, the result and ask to summarise for the user
+summary_prompt = '''Summarise this result in a bulleted list to answer the search query a customer has sent.
+Search query: SEARCH_QUERY_HERE
+Search result: SEARCH_RESULT_HERE
+Summary:
+'''
+summary_prepped = summary_prompt.replace('SEARCH_QUERY_HERE',f1_query).replace('SEARCH_RESULT_HERE',result_df['result'][0])
+summary = openai.Completion.create(engine=COMPLETIONS_MODEL,prompt=summary_prepped,max_tokens=500)
+# Response provided by GPT-3
+print(summary['choices'][0]['text'])
+- Breach of FIA regulations can lead to disqualification
+- Imposed sanctions may include suspension of Competitor's Staff Certificate of Registration
+- Competitor's Staff Certificate of Registration may also be withdrawn for remaining duration of the season
+- Competitor has right to appeal the IT's decision
+- Competitor must make written request to be heard
+- FIA will support Competitor's request
+- Stewards have no authority to suspend or withdraw Competitor's Staff Certificate of Registration for any breach or alleged breach of the FIA Code of Good Standing
+Search
+Now that we've got our knowledge embedded and stored in Redis, we can now create an internal search application. Its not sophisticated but it'll get the job done for us.
+
+In the directory containing this app, execute streamlit run search.py. This will open up a Streamlit app in your browser where you can ask questions of your embedded data.
+
+Example Questions:
+
+what is the cost cap for a power unit in 2023
+what should competitors include on their application form
+Build your moat
+The Q&A was useful, but fairly limited in the complexity of interaction we can have - if the user asks a sub-optimal question, there is no assistance from the system to prompt them for more info or conversation to lead them down the right path.
+
+For the next step we'll make a Chatbot using the Chat Completions endpoint, which will:
+
+Be given instructions on how it should act and what the goals of its users are
+Be supplied some required information that it needs to collect
+Go back and forth with the customer until it has populated that information
+Say a trigger word that will kick off semantic search and summarisation of the response
+For more details on our Chat Completions endpoint and how to interact with it, please check out the docs here.
+
+Framework
+This section outlines a basic framework for working with the API and storing context of previous conversation "turns". Once this is established, we'll extend it to use our retrieval endpoint.
+
+# A basic example of how to interact with our ChatCompletion endpoint
+# It requires a list of "messages", consisting of a "role" (one of system, user or assistant) and "content"
+question = 'How can you help me'
+
+
+completion = openai.ChatCompletion.create(
+  model="gpt-3.5-turbo",
+  messages=[
+    {"role": "user", "content": question}
+  ]
+)
+print(f"{completion['choices'][0]['message']['role']}: {completion['choices'][0]['message']['content']}")
+assistant: 
+
+As an AI language model developed by OpenAI, I can help you in several ways. Here are some examples:
+
+
+- Answer questions: You can ask me any questions you have, and I'll do my best to provide accurate and helpful answers. I can help you with anything from math problems to historical facts to recommendations for restaurants or movies.
+
+- Assist in writing: Whether you need help with grammar, sentence structure, or word choice, I can assist you in writing. I can also help you generate ideas for writing assignments and provide writing prompts for inspiration.
+
+- Provide information: If you need information on a specific topic or want to learn more about a particular subject, I can provide you with useful information and resources.
+
+- Give suggestions: If you're unsure about something or need advice, I can give you suggestions and recommendations based on my knowledge and experience.
+
+- Chat and entertain: If you're feeling bored or lonely, I can chat with you and try to entertain you with jokes, stories, or interesting facts.
+from termcolor import colored
+
+# A basic class to create a message as a dict for chat
+class Message:
+    
+    
+    def __init__(self,role,content):
+        
+        self.role = role
+        self.content = content
+        
+    def message(self):
+        
+        return {"role": self.role,"content": self.content}
+        
+# Our assistant class we'll use to converse with the bot
+class Assistant:
+    
+    def __init__(self):
+        self.conversation_history = []
+
+    def _get_assistant_response(self, prompt):
+        
+        try:
+            completion = openai.ChatCompletion.create(
+              model="gpt-3.5-turbo",
+              messages=prompt
+            )
+            
+            response_message = Message(completion['choices'][0]['message']['role'],completion['choices'][0]['message']['content'])
+            return response_message.message()
+            
+        except Exception as e:
+            
+            return f'Request failed with exception {e}'
+
+    def ask_assistant(self, next_user_prompt, colorize_assistant_replies=True):
+        [self.conversation_history.append(x) for x in next_user_prompt]
+        assistant_response = self._get_assistant_response(self.conversation_history)
+        self.conversation_history.append(assistant_response)
+        return assistant_response
+            
+        
+    def pretty_print_conversation_history(self, colorize_assistant_replies=True):
+        for entry in self.conversation_history:
+            if entry['role'] == 'system':
+                pass
+            else:
+                prefix = entry['role']
+                content = entry['content']
+                output = colored(prefix +':\n' + content, 'green') if colorize_assistant_replies and entry['role'] == 'assistant' else prefix +':\n' + content
+                print(output)
+# Initiate our Assistant class
+conversation = Assistant()
+
+# Create a list to hold our messages and insert both a system message to guide behaviour and our first user question
+messages = []
+system_message = Message('system','You are a helpful business assistant who has innovative ideas')
+user_message = Message('user','What can you do to help me')
+messages.append(system_message.message())
+messages.append(user_message.message())
+messages
+[{'role': 'system',
+  'content': 'You are a helpful business assistant who has innovative ideas'},
+ {'role': 'user', 'content': 'What can you do to help me'}]
+# Get back a response from the Chatbot to our question
+response_message = conversation.ask_assistant(messages)
+print(response_message['content'])
+As a business assistant with innovative ideas, I can:
+
+1. Conduct market research: I can carry out thorough research on your target market, analyze consumer behavior, and gather insights to help you make informed decisions about your business.
+
+2. Develop a strategic plan: I can help you come up with a comprehensive business plan that includes a clear vision, goals, and actionable steps to help you achieve your business objectives.
+
+3. Create a strong online presence: I can help you create a compelling website, develop a social media strategy, and create engaging online content to help you connect with your customers.
+
+4. Improve customer service: I can help you identify areas where your customer service needs improvement and help you develop strategies for how to provide excellent service to your customers.
+
+5. Optimize your operations: I can help you streamline your business processes, identify inefficiencies, and create systems that will improve productivity, reduce costs, and increase profitability.
+
+6. Explore new revenue streams: I can help you identify new opportunities for revenue generation, such as introducing new products or services, or expanding into new markets.
+
+7. Develop innovative marketing: I can help you come up with innovative marketing strategies that will help you stand out from competitors and resonate with your target audience.
+next_question = 'Tell me more about option 2'
+
+# Initiate a fresh messages list and insert our next question
+messages = []
+user_message = Message('user',next_question)
+messages.append(user_message.message())
+response_message = conversation.ask_assistant(messages)
+print(response_message['content'])
+Developing a strategic plan is one of the most critical aspects of running a successful business. A strategic plan outlines a clear vision for your business and provides a roadmap for achieving your goals. As a business assistant, I can help you develop a comprehensive strategic plan that includes:
+
+1. A clear and concise vision statement that defines what you want to achieve with your business.
+
+2. An analysis of your competition and the market environment to identify opportunities and threats.
+
+3. A SWOT analysis to identify your business's strengths, weaknesses, opportunities, and threats.
+
+4. A clear set of objectives and goals that are specific, measurable, attainable, relevant, and time-bound.
+
+5. An action plan that outlines the steps you need to take to achieve your goals.
+
+6. A timeline that details when each objective will be completed.
+
+7. A monitoring and evaluation plan to keep track of your progress and identify areas that need improvement.
+
+By working together, we can develop a strategic plan that aligns with your long-term goals and helps you grow your business.
+# Print out a log of our conversation so far
+
+conversation.pretty_print_conversation_history()
+user:
+What can you do to help me
+assistant:
+As a business assistant with innovative ideas, I can:
+
+1. Conduct market research: I can carry out thorough research on your target market, analyze consumer behavior, and gather insights to help you make informed decisions about your business.
+
+2. Develop a strategic plan: I can help you come up with a comprehensive business plan that includes a clear vision, goals, and actionable steps to help you achieve your business objectives.
+
+3. Create a strong online presence: I can help you create a compelling website, develop a social media strategy, and create engaging online content to help you connect with your customers.
+
+4. Improve customer service: I can help you identify areas where your customer service needs improvement and help you develop strategies for how to provide excellent service to your customers.
+
+5. Optimize your operations: I can help you streamline your business processes, identify inefficiencies, and create systems that will improve productivity, reduce costs, and increase profitability.
+
+6. Explore new revenue streams: I can help you identify new opportunities for revenue generation, such as introducing new products or services, or expanding into new markets.
+
+7. Develop innovative marketing: I can help you come up with innovative marketing strategies that will help you stand out from competitors and resonate with your target audience.
+user:
+Tell me more about option 2
+assistant:
+Developing a strategic plan is one of the most critical aspects of running a successful business. A strategic plan outlines a clear vision for your business and provides a roadmap for achieving your goals. As a business assistant, I can help you develop a comprehensive strategic plan that includes:
+
+1. A clear and concise vision statement that defines what you want to achieve with your business.
+
+2. An analysis of your competition and the market environment to identify opportunities and threats.
+
+3. A SWOT analysis to identify your business's strengths, weaknesses, opportunities, and threats.
+
+4. A clear set of objectives and goals that are specific, measurable, attainable, relevant, and time-bound.
+
+5. An action plan that outlines the steps you need to take to achieve your goals.
+
+6. A timeline that details when each objective will be completed.
+
+7. A monitoring and evaluation plan to keep track of your progress and identify areas that need improvement.
+
+By working together, we can develop a strategic plan that aligns with your long-term goals and helps you grow your business.
+Knowledge retrieval
+Now we'll extend the class to call a downstream service when a stop sequence is spoken by the Chatbot.
+
+The main changes are:
+
+The system message is more comprehensive, giving criteria for the Chatbot to advance the conversation
+Adding an explicit stop sequence for it to use when it has the info it needs
+Extending the class with a function _get_search_results which sources Redis results
+# Updated system prompt requiring Question and Year to be extracted from the user
+system_prompt = '''
+You are a helpful Formula 1 knowledge base assistant. You need to capture a Question and Year from each customer.
+The Question is their query on Formula 1, and the Year is the year of the applicable Formula 1 season.
+If they haven't provided the Year, ask them for it again.
+Once you have the Year, say "searching for answers".
+
+Example 1:
+
+User: I'd like to know the cost cap for a power unit
+
+Assistant: Certainly, what year would you like this for?
+
+User: 2023 please.
+
+Assistant: Searching for answers.
+'''
+
+# New Assistant class to add a vector database call to its responses
+class RetrievalAssistant:
+    
+    def __init__(self):
+        self.conversation_history = []  
+
+    def _get_assistant_response(self, prompt):
+        
+        try:
+            completion = openai.ChatCompletion.create(
+              model=CHAT_MODEL,
+              messages=prompt,
+              temperature=0.1
+            )
+            
+            response_message = Message(completion['choices'][0]['message']['role'],completion['choices'][0]['message']['content'])
+            return response_message.message()
+            
+        except Exception as e:
+            
+            return f'Request failed with exception {e}'
+    
+    # The function to retrieve Redis search results
+    def _get_search_results(self,prompt):
+        latest_question = prompt
+        search_content = get_redis_results(redis_client,latest_question,INDEX_NAME)['result'][0]
+        return search_content
+        
+
+    def ask_assistant(self, next_user_prompt):
+        [self.conversation_history.append(x) for x in next_user_prompt]
+        assistant_response = self._get_assistant_response(self.conversation_history)
+        
+        # Answer normally unless the trigger sequence is used "searching_for_answers"
+        if 'searching for answers' in assistant_response['content'].lower():
+            question_extract = openai.Completion.create(model=COMPLETIONS_MODEL,prompt=f"Extract the user's latest question and the year for that question from this conversation: {self.conversation_history}. Extract it as a sentence stating the Question and Year")
+            search_result = self._get_search_results(question_extract['choices'][0]['text'])
+            
+            # We insert an extra system prompt here to give fresh context to the Chatbot on how to use the Redis results
+            # In this instance we add it to the conversation history, but in production it may be better to hide
+            self.conversation_history.insert(-1,{"role": 'system',"content": f"Answer the user's question using this content: {search_result}. If you cannot answer the question, say 'Sorry, I don't know the answer to this one'"})
+            #[self.conversation_history.append(x) for x in next_user_prompt]
+            
+            assistant_response = self._get_assistant_response(self.conversation_history)
+            print(next_user_prompt)
+            print(assistant_response)
+            self.conversation_history.append(assistant_response)
+            return assistant_response
+        else:
+            self.conversation_history.append(assistant_response)
+            return assistant_response
+            
+        
+    def pretty_print_conversation_history(self, colorize_assistant_replies=True):
+        for entry in self.conversation_history:
+            if entry['role'] == 'system':
+                pass
+            else:
+                prefix = entry['role']
+                content = entry['content']
+                output = colored(prefix +':\n' + content, 'green') if colorize_assistant_replies and entry['role'] == 'assistant' else prefix +':\n' + content
+                #prefix = entry['role']
+                print(output)
+conversation = RetrievalAssistant()
+messages = []
+system_message = Message('system',system_prompt)
+user_message = Message('user','How can a competitor be disqualified from competition')
+messages.append(system_message.message())
+messages.append(user_message.message())
+response_message = conversation.ask_assistant(messages)
+response_message
+{'role': 'assistant',
+ 'content': 'Sure, what year would you like this information for?'}
+messages = []
+user_message = Message('user','For 2023 please.')
+messages.append(user_message.message())
+response_message = conversation.ask_assistant(messages)
+#response_message
+[{'role': 'user', 'content': 'For 2023 please.'}]
+{'role': 'assistant', 'content': 'According to the FIA Sporting Regulations for the 2023 Formula One season, a competitor can be disqualified from the competition if they breach the FIA regulations. The FIA will investigate and establish the existence of the breach and impose any sanction upon the person and competitor concerned. The President of the FIA, in its capacity as prosecuting authority, will ask for the imposition of a suspension upon Competitor’s Staff Certificate of Registration holders who have contravened the FIA Code of Good Standing or the withdrawal of the Competitor’s Staff Certificate of Registration. The person and/or competitor sanctioned may bring an appeal before the ICA against the IT’s decision.'}
+conversation.pretty_print_conversation_history()
+user:
+How can a competitor be disqualified from competition
+assistant:
+Sure, what year would you like this information for?
+user:
+For 2023 please.
+assistant:
+According to the FIA Sporting Regulations for the 2023 Formula One season, a competitor can be disqualified from the competition if they breach the FIA regulations. The FIA will investigate and establish the existence of the breach and impose any sanction upon the person and competitor concerned. The President of the FIA, in its capacity as prosecuting authority, will ask for the imposition of a suspension upon Competitor’s Staff Certificate of Registration holders who have contravened the FIA Code of Good Standing or the withdrawal of the Competitor’s Staff Certificate of Registration. The person and/or competitor sanctioned may bring an appeal before the ICA against the IT’s decision.
+Chatbot
+Now we'll put all this into action with a real (basic) Chatbot.
+
+In the directory containing this app, execute streamlit run chat.py. This will open up a Streamlit app in your browser where you can ask questions of your embedded data.
+
+Example Questions:
+
+what is the cost cap for a power unit in 2023
+what should competitors include on their application form
+how can a competitor be disqualified
+Consolidation
+Over the course of this notebook you have:
+
+Laid the foundations of your product by embedding our knowledge base
+Created a Q&A application to serve basic use cases
+Extended this to be an interactive Chatbot
+These are the foundational building blocks of any Q&A or Chat application using our APIs - these are your starting point, and we look forward to seeing what you build with them!
+```
