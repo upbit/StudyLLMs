@@ -1,2 +1,3 @@
 # StudyLLMs
-Study Large Language Models
+
+Notes for Obsidian
