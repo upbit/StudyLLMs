@@ -17,7 +17,7 @@
 ```bash
 $ cd /
 $ git clone https://github.com/triton-inference-server/tensorrtllm_backend
-$ cd 
+$ cd /tensorrtllm_backend
 $ git lfs install
 $ git submodule update --init --recursive
 
