@@ -4,6 +4,8 @@
 [TensorRT-LLM][ERROR] 2: [engine.cpp::deserializeEngine::1148] Error Code 2: Internal Error (Assertion engine->deserialize(start, size, allocator, runtime) failed. )
 ```
 
+9.2.0.5是 https://github.com/NVIDIA/TensorRT-LLM/blob/728cc0044bb76d1fafbcaa720c403e8de4f81906/docker/common/install_tensorrt.sh
+
 # 编译 [tensorrtllm_backend](https://github.com/triton-inference-server/tensorrtllm_backend)
 
 略。希望新版本已经自带了，或者用这个半成品镜像：`docker push upbit/triton_trt_llm`
