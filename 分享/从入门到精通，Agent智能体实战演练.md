@@ -1,5 +1,5 @@
 [LLM Powered Autonomous Agents](https://lilianweng.github.io/posts/2023-06-23-agent/)
-![[Pasted image 20240314143758.png]]
+![[AI Agent.png]]
 #### Agents解决的问题：
 * 模型本身的弱点（事实准确性、时效性）-> 检索增强
 * 拓展模型能力边界（垂类知识，分段摘要或RAG提供输入） -> FuncCall+其他工具
