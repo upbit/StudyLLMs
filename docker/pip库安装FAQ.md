@@ -20,6 +20,20 @@ apt-get install openmpi-bin openmpi-common libopenmpi-dev
 pip install mpi4py
 ```
 
+## fitz
 
+```python
+pip install PyMuPDF
+```
 
+## PIL
 
+```python
+pip install pillow
+```
+
+## cv2
+
+```python
+pip install opencv-python
+```
