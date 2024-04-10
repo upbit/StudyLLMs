@@ -3,7 +3,9 @@
 错误提示：`error in demjson setup command: use_2to3 is invalid.`
 
 ```python
-pip install "setuptools<58.0.0"
+pip install -U "setuptools<58.0.0" wheel
+
+pip install demjson
 ```
 
 ## [fatal error: mpi.h: No such file or directory](https://stackoverflow.com/questions/26920083/fatal-error-mpi-h-no-such-file-or-directory-include-mpi-h)
@@ -14,6 +16,8 @@ pip install "setuptools<58.0.0"
 apt-get remove mpich  
 MPICC=openmpicc pip install --upgrade mpi4py
 apt-get install openmpi-bin openmpi-common libopenmpi-dev
+
+pip install mpi4py
 ```
 
 
