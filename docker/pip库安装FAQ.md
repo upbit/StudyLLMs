@@ -20,6 +20,14 @@ apt-get install openmpi-bin openmpi-common libopenmpi-dev
 pip install mpi4py
 ```
 
+## (MacOS) No module named 'datrie'
+
+错误提示: `_build_env/bin/llvm-ar' failed: No such file or directory`
+
+```python
+AR=/usr/bin/ar pip install datrie
+```
+
 ## fitz
 
 ```python

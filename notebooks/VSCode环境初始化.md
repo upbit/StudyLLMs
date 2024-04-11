@@ -9,7 +9,7 @@
 
 如果太老则去 [https://developer.nvidia.com/cuda-downloads](https://developer.nvidia.com/cuda-downloads) 安装新版驱动。
 版本比较新就不需要升级，接着装cuDNN: https://developer.nvidia.com/rdp/cudnn-archive
-查看cuDNN版本，这里对应的也就说8.9.6.x：
+解压缩并复制到 **/usr/local/cuda-12.x**，查看cuDNN版本，这里对应的也就说8.9.6.x：
 ```bash
 $ cat /usr/local/cuda/include/cudnn_version.h | grep CUDNN_MAJOR -A 2
 #define CUDNN_MAJOR 8
