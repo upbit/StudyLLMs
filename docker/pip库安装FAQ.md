@@ -45,6 +45,14 @@ Building wheel for samplerate (pyproject.toml) ... error
 
 再安装 `pip install "samplerate>=0.2.1"` 即可
 
+## (MacOS) No module named 'datrie'
+
+错误提示: `_build_env/bin/llvm-ar' failed: No such file or directory`
+
+```python
+AR=/usr/bin/ar pip install datrie
+```
+
 ## fitz
 
 ```python
