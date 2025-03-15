@@ -1,0 +1,20 @@
+name: ollama
+
+services:
+  ollama-server:
+    container_name: ollama-server
+    image: ollama/ollama:latest
+    extends:
+      file: hwaccel.ml.yml
+      service: cuda # set to one of [armnn, cuda, openvino, openvino-wsl] for accelerated inference - use the `-wsl` version for WSL2 where applicable
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1 # alternatively, use `count: all` for all GPUs
+              capabilities: [gpu]
+    volumes:
+      - .\models:/root/models
+    ports:
+      - 11434:11434
